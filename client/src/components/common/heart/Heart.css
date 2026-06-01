@@ -1,0 +1,15 @@
+.heart-container {
+    width: 24px;
+    height: 24px;
+    cursor: pointer;
+  }
+  
+  .heart-icon {
+    fill: #ffffff; /* White heart */
+    transition: fill 0.3s ease-in-out;
+  }
+  
+  .heart-icon.filled {
+    fill: #ff0000; /* Red heart when hovered */
+  }
+  
