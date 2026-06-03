@@ -7,7 +7,7 @@ import { FaHeart } from "react-icons/fa";
 const TurfCard = ({ turf, index }) => {
     const [avgReviewCount, setAvgReviewCount] = useState(0);
     const [isHovered, setIsHovered] = useState(false);
-    const [imgSrc, setImgSrc] = useState(turf?.image || 'https://images.unsplash.com/photo-1459865264687-595d652de67e?q=80&w=600&h=400&auto=format&fit=crop');
+    const [imgSrc, setImgSrc] = useState(turf?.image || '/images/turf.jpg');
 
     useEffect(() => {
         const count = GetAvgRating(turf.reviews);
@@ -32,8 +32,8 @@ const TurfCard = ({ turf, index }) => {
                             src={imgSrc}
                             alt={turf?.turfName || 'Turf thumbnail'}
                             onError={() => {
-                                if (imgSrc !== 'https://images.unsplash.com/photo-1459865264687-595d652de67e?q=80&w=600&h=400&auto=format&fit=crop') {
-                                    setImgSrc('https://images.unsplash.com/photo-1459865264687-595d652de67e?q=80&w=600&h=400&auto=format&fit=crop');
+                                if (imgSrc !== '/images/turf.jpg') {
+                                    setImgSrc('/images/turf.jpg');
                                 }
                             }}
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 relative z-0"
@@ -64,7 +64,7 @@ const TurfCard = ({ turf, index }) => {
                     {/* Content Details */}
                     <div className="flex flex-col flex-grow pt-5 px-2 pb-2 relative z-20">
                         <div className="flex justify-between items-start mb-2">
-                            <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 tracking-tight line-clamp-1 pr-2 group-hover:text-turf-green transition-colors">
+                            <h3 className="text-xl font-extrabold text-turf-green tracking-tight line-clamp-1 pr-2 transition-colors">
                                 {turf?.turfName}
                             </h3>
                             <div className="flex items-center gap-1.5 px-2 py-1 bg-slate-50 dark:bg-slate-800 rounded-md border border-slate-200 dark:border-slate-700 shrink-0">

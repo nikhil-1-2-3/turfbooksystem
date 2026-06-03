@@ -49,7 +49,7 @@ const About = () => {
             >
                 <div className="absolute inset-0 bg-slate-900/40 mix-blend-multiply z-10"></div>
                 <img 
-                    src="https://images.unsplash.com/photo-1518605368461-1ee7e161746f?q=80&w=2069&h=800&auto=format&fit=crop" 
+                    src="/images/hero.jpg" 
                     alt="Premium Turf Action" 
                     className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-[2s] ease-out"
                 />
@@ -109,7 +109,7 @@ const About = () => {
                 >
                     <div className="absolute inset-0 bg-gradient-to-tr from-turf-green/20 to-transparent blur-2xl -z-10 rounded-full"></div>
                     <img 
-                        src="https://images.unsplash.com/photo-1522778119026-d647f0596c20?q=80&w=1000&h=800&auto=format&fit=crop" 
+                        src="/images/stadium.jpg" 
                         alt="Stadium Lights" 
                         className="rounded-3xl border border-slate-800 shadow-2xl"
                     />
