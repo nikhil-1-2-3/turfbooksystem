@@ -20,28 +20,28 @@ export default function ProfileDropdown({ closeMobileMenu }) {
 
   if (!user) {
     console.log("no user");
-    return localStorage.setItem("token", null)
+    localStorage.setItem("token", null);
+    return null;
   }
 
   return (
-    <button className="relative" onClick={(e) => { e.stopPropagation(); setOpen(!open); }}>
-      <div className="flex items-center gap-x-1">
+    <div className="relative cursor-pointer z-[60]" ref={ref}>
+      <div className="flex items-center gap-x-1" onClick={() => setOpen(!open)}>
         <img
           src={profileImage}
           alt={`profile-${user?.firstName}`}
-          className="aspect-square w-[30px] rounded-full object-cover"
+          className="aspect-square w-[35px] rounded-full object-cover border-2 border-slate-700"
         />
-        <AiOutlineCaretDown className="text-sm text-richblack-100" />
+        <AiOutlineCaretDown className="text-sm text-slate-300" />
       </div>
       {open && (
         <div
           onClick={(e) => e.stopPropagation()}
-          className="absolute top-[118%] -right-8 z-[1000] divide-y-[1px] divide-black overflow-hidden rounded-md border-[1px] border-black bg-white"
-          ref={ref}
+          className="absolute bottom-full mb-2 md:bottom-auto md:top-[118%] right-0 md:-right-8 z-[1000] divide-y-[1px] divide-slate-800 overflow-hidden rounded-xl border border-slate-700 bg-slate-900 shadow-2xl w-48"
         >
           <Link to="/dashboard/my-profile" onClick={() => { setOpen(false); if(closeMobileMenu) closeMobileMenu(); }}>
-            <div className="flex w-full items-center gap-x-1 py-[10px] px-[12px] text-sm text-richblack-100 hover:bg-richblack-700 hover:text-richblack-25">
-              <VscDashboard className="text-lg" />
+            <div className="flex w-full items-center gap-x-3 py-[14px] px-[16px] text-sm text-slate-300 hover:bg-slate-800 hover:text-white transition-colors font-medium">
+              <VscDashboard className="text-xl" />
               Dashboard
             </div>
           </Link>
@@ -51,13 +51,13 @@ export default function ProfileDropdown({ closeMobileMenu }) {
               setOpen(false)
               if(closeMobileMenu) closeMobileMenu();
             }}
-            className="flex w-full items-center gap-x-1 py-[10px] px-[12px] text-sm text-richblack-100 hover:bg-richblack-700 hover:text-richblack-25"
+            className="flex w-full items-center gap-x-3 py-[14px] px-[16px] text-sm text-slate-300 hover:bg-red-500/10 hover:text-red-400 transition-colors cursor-pointer font-medium"
           >
-            <VscSignOut className="text-lg" />
+            <VscSignOut className="text-xl" />
             Logout
           </div>
         </div>
       )}
-    </button>
+    </div>
   )
 }
