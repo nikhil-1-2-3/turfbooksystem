@@ -235,8 +235,8 @@ export default function Navbar() {
                                                 </Link>
                                             </div>
                                         ) : (
-                                            <div className="flex justify-center" onClick={toggleMobileMenu}>
-                                                <ProfileDropDown />
+                                            <div className="flex justify-center">
+                                                <ProfileDropDown closeMobileMenu={() => setMobileMenuOpen(false)} />
                                             </div>
                                         )}
                                     </div>

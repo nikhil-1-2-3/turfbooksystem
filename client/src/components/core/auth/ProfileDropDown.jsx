@@ -7,7 +7,7 @@ import { Link, useNavigate } from "react-router-dom"
 import useOnClickOutside from "../../../hooks/useOnClickOutside"
 import { logout } from "../../../services/operation/authApi"
 
-export default function ProfileDropdown() {
+export default function ProfileDropdown({ closeMobileMenu }) {
   const { user, profileImage } = useSelector((state) => state.profile)
   const dispatch = useDispatch()
   const navigate = useNavigate()
@@ -24,7 +24,7 @@ export default function ProfileDropdown() {
   }
 
   return (
-    <button className="relative" onClick={() => setOpen(true)}>
+    <button className="relative" onClick={(e) => { e.stopPropagation(); setOpen(!open); }}>
       <div className="flex items-center gap-x-1">
         <img
           src={profileImage}
@@ -39,7 +39,7 @@ export default function ProfileDropdown() {
           className="absolute top-[118%] -right-8 z-[1000] divide-y-[1px] divide-black overflow-hidden rounded-md border-[1px] border-black bg-white"
           ref={ref}
         >
-          <Link to="/dashboard/my-profile" onClick={() => setOpen(false)}>
+          <Link to="/dashboard/my-profile" onClick={() => { setOpen(false); if(closeMobileMenu) closeMobileMenu(); }}>
             <div className="flex w-full items-center gap-x-1 py-[10px] px-[12px] text-sm text-richblack-100 hover:bg-richblack-700 hover:text-richblack-25">
               <VscDashboard className="text-lg" />
               Dashboard
@@ -49,6 +49,7 @@ export default function ProfileDropdown() {
             onClick={() => {
               dispatch(logout(navigate))
               setOpen(false)
+              if(closeMobileMenu) closeMobileMenu();
             }}
             className="flex w-full items-center gap-x-1 py-[10px] px-[12px] text-sm text-richblack-100 hover:bg-richblack-700 hover:text-richblack-25"
           >

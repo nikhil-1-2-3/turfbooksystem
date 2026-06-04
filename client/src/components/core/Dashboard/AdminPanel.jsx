@@ -143,7 +143,7 @@ const AdminPanel = () => {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-4 mb-6 border-b border-slate-800 pb-2">
+            <div className="flex gap-4 mb-6 border-b border-slate-800 pb-2 overflow-x-auto whitespace-nowrap scrollbar-hide">
                 <button 
                     onClick={() => setActiveTab('users')}
                     className={`px-6 py-2 font-semibold transition-all ${activeTab === 'users' ? 'text-blue-400 border-b-2 border-blue-400' : 'text-slate-500 hover:text-slate-300'}`}
@@ -173,8 +173,8 @@ const AdminPanel = () => {
             {/* Users Tab */}
             {activeTab === 'users' && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-left">
+                    <div className="overflow-x-auto w-full">
+                        <table className="w-full text-left whitespace-nowrap">
                             <thead className="bg-slate-950 border-b border-slate-800 text-slate-400 text-sm">
                                 <tr>
                                     <th className="px-6 py-4 font-medium">Name</th>
