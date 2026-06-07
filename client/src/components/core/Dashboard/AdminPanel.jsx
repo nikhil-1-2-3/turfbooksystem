@@ -24,7 +24,7 @@ const AdminPanel = () => {
             try {
                 // Fetch Users
                 const userRes = await apiConnector("GET", GET_ALL_USERS_API, null, {
-                    Authorization: `Bearer ${token}`,
+                    Authorisation: `Bearer ${token}`,
                 });
                 if (userRes.data.success) {
                     setUsers(userRes.data.data);
@@ -32,7 +32,7 @@ const AdminPanel = () => {
 
                 // Fetch Bookings
                 const bookingRes = await apiConnector("GET", GET_ALL_BOOKINGS_API, null, {
-                    Authorization: `Bearer ${token}`,
+                    Authorisation: `Bearer ${token}`,
                 });
                 if (bookingRes.data.success) {
                     setBookings(bookingRes.data.data);
@@ -51,7 +51,7 @@ const AdminPanel = () => {
         
         try {
             const res = await apiConnector("DELETE", DELETE_USER_API, { userId }, {
-                Authorization: `Bearer ${token}`,
+                Authorisation: `Bearer ${token}`,
             });
             if (res.data.success) {
                 toast.success("User deleted successfully");
@@ -74,7 +74,7 @@ const AdminPanel = () => {
 
         try {
             const res = await apiConnector("PUT", ALLOT_BOOKING_API, { bookingId }, {
-                Authorization: `Bearer ${token}`,
+                Authorisation: `Bearer ${token}`,
             });
             if (res.data.success) {
                 toast.success("Token Verified! Turf Successfully Allotted.");
@@ -91,7 +91,7 @@ const AdminPanel = () => {
 
         try {
             const res = await apiConnector("PUT", APPROVE_CANCELLATION_API, { bookingId }, {
-                Authorization: `Bearer ${token}`,
+                Authorisation: `Bearer ${token}`,
             });
             if (res.data.success) {
                 toast.success("Cancellation Approved! Slot is now free.");
