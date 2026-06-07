@@ -1,0 +1,5 @@
+
+--- Auth Middleware ---
+Headers: {"accept":"application/json, text/plain, */*","content-type":"application/json","authorisation":"Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3R1c2VyQGV4YW1wbGUuY29tIiwiaWQiOiI2YTE1NzA0MjQzOTM4MjY3OGY1MDVkNjMiLCJhY2NvdW50VHlwZSI6IlVzZXIiLCJpYXQiOjE3ODA2Njc4NjcsImV4cCI6MTc4MDc1NDI2N30.0sP0UO3WuGOytYmCPQOVb3ck8HtEqN-5Pfazf7wXutQ","user-agent":"axios/1.7.3","content-length":"142","accept-encoding":"gzip, compress, deflate, br","host":"localhost:4050","connection":"keep-alive"}
+Cookies: {}
+Extracted Token: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InRlc3R1c2VyQGV4YW1wbGUuY29tIiwiaWQiOiI2YTE1NzA0MjQzOTM4MjY3OGY1MDVkNjMiLCJhY2NvdW50VHlwZSI6IlVzZXIiLCJpYXQiOjE3ODA2Njc4NjcsImV4cCI6MTc4MDc1NDI2N30.0sP0UO3WuGOytYmCPQOVb3ck8HtEqN-5Pfazf7wXutQ

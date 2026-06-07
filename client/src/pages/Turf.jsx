@@ -15,6 +15,29 @@ import { ACCOUNT_TYPE } from '../utils/constants';
 import { FaRupeeSign } from "react-icons/fa";
 import { setTime } from '../slices/paymenySlice';
 import Spinner from '../components/common/spinner/Spinner';
+import { MdSportsCricket, MdSportsSoccer, MdSportsTennis, MdTimer } from 'react-icons/md';
+import { io } from "socket.io-client";
+
+const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://localhost:4050/api/v1';
+const SOCKET_URL = BASE_URL.replace('/api/v1', '');
+
+const SPORTS_DATA = {
+    Cricket: [
+        { name: 'Cricket Kit', price: 300 },
+        { name: 'Balls', price: 50 },
+        { name: 'Shoes', price: 100 }
+    ],
+    Football: [
+        { name: 'Football', price: 100 },
+        { name: 'Shoes', price: 100 },
+        { name: 'Bibs', price: 50 }
+    ],
+    Badminton: [
+        { name: 'Rackets', price: 150 },
+        { name: 'Shuttlecocks', price: 50 },
+        { name: 'Shoes', price: 100 }
+    ]
+};
 
 const Turf = () => {
     const { token } = useSelector((state) => state.auth);
@@ -38,6 +61,85 @@ const Turf = () => {
     const today = new Date();
     today.setMinutes(today.getMinutes() - today.getTimezoneOffset());
     const [selectedDate, setSelectedDate] = useState(today.toISOString().split('T')[0]);
+
+    const [selectedSport, setSelectedSport] = useState(null);
+    const [selectedEquipment, setSelectedEquipment] = useState([]);
+    
+    // WebSockets States
+    const [socket, setSocket] = useState(null);
+    const [lockedSlots, setLockedSlots] = useState([]);
+    const [myLockTimer, setMyLockTimer] = useState(null);
+
+    // Initialize Socket
+    useEffect(() => {
+        const newSocket = io(SOCKET_URL);
+        setSocket(newSocket);
+        return () => newSocket.close();
+    }, []);
+
+    // Handle Socket Events
+    useEffect(() => {
+        if (socket && turfId && selectedDate) {
+            socket.emit("join_turf", { turfId, date: selectedDate });
+            
+            socket.on("initial_locks", (locks) => setLockedSlots(locks));
+            
+            socket.on("slot_locked", ({ time: lockedTime }) => {
+                setLockedSlots(prev => [...prev, lockedTime]);
+            });
+            
+            socket.on("slot_unlocked", ({ time: unlockedTime }) => {
+                setLockedSlots(prev => prev.filter(t => t !== unlockedTime));
+                // if it was my slot
+                if (time === unlockedTime) {
+                    toast.error("Your slot lock expired!");
+                    setPrice(null);
+                    setActiveIndex(null);
+                    setMyLockTimer(null);
+                    dispatch(setTime(null));
+                }
+            });
+            
+            socket.on("lock_error", ({ message }) => {
+                toast.error(message);
+            });
+        }
+        
+        return () => {
+            if (socket) {
+                socket.off("initial_locks");
+                socket.off("slot_locked");
+                socket.off("slot_unlocked");
+                socket.off("lock_error");
+            }
+        }
+    }, [socket, turfId, selectedDate, time]);
+
+    // Countdown timer
+    useEffect(() => {
+        let interval;
+        if (myLockTimer > 0) {
+            interval = setInterval(() => {
+                setMyLockTimer(prev => prev - 1);
+            }, 1000);
+        } else if (myLockTimer === 0) {
+            setMyLockTimer(null);
+        }
+        return () => clearInterval(interval);
+    }, [myLockTimer]);
+
+    const equipmentTotal = selectedEquipment.reduce((acc, item) => acc + item.price, 0);
+
+    const handleEquipmentToggle = (item) => {
+        setSelectedEquipment((prev) => {
+            const isSelected = prev.some((eq) => eq.name === item.name);
+            if (isSelected) {
+                return prev.filter((eq) => eq.name !== item.name);
+            } else {
+                return [...prev, item];
+            }
+        });
+    };
 
     const formatTime12Hour = (timeStr) => {
         if (!timeStr) return '';
@@ -63,11 +165,14 @@ const Turf = () => {
             if(booked===1){
                 return toast.error("Turf Already Booked For Given Time");
             }
+            if (!selectedSport) {
+                return toast.error("Please select a sport to play");
+            }
             if (!price) {
                 toast.error("Please select the time");
                 return;
             }
-            if (time && price) {
+            if (time && price && selectedSport) {
                 // Check contiguous availability
                 let selectedTimes = [];
                 let isAvailable = true;
@@ -87,7 +192,18 @@ const Turf = () => {
                     return toast.error("Not enough contiguous available slots for this duration!");
                 }
 
-                navigate(`/checkout/${turfId}`, { state: { price: calculatedPrice + 14, time: selectedTimes.join(','), turfDetails, duration, date: selectedDate } });
+                navigate(`/checkout/${turfId}`, { 
+                    state: { 
+                        price: calculatedPrice + equipmentTotal + 14, 
+                        time: selectedTimes.join(','), 
+                        turfDetails, 
+                        duration, 
+                        date: selectedDate,
+                        sport: selectedSport,
+                        equipment: selectedEquipment.map(e => e.name),
+                        equipmentTotal: equipmentTotal
+                    } 
+                });
             }
         }
         else {
@@ -124,17 +240,27 @@ const Turf = () => {
 
     const timeHandler = (timePrice, index) => {
 
-        if(timePrice.booked===1){
-            setBooked(1);
+        if(timePrice.booked===1 || lockedSlots.includes(timePrice.time)){
+            return; // do not allow selection if booked or locked
         }
-        else{
-            setBooked(null);
+        
+        // Unlock previously selected slot if any
+        if (time && socket) {
+            socket.emit("unlock_slot", { turfId, date: selectedDate, time });
         }
+
+        setBooked(null);
         setPrice(timePrice.price);
         setActiveIndex(index);
         setDuration(1); // Reset duration on new slot pick
 
         dispatch(setTime(timePrice.time));
+        
+        // Lock the new slot
+        if (socket) {
+            socket.emit("lock_slot", { turfId, date: selectedDate, time: timePrice.time });
+            setMyLockTimer(300); // 5 mins
+        }
     }
 
 
@@ -233,20 +359,93 @@ const Turf = () => {
                                 <div className='grid grid-cols-3 sm:grid-cols-4 lg:grid-cols-3 gap-3 mb-8'>
                                     {
                                         timePrices && (
-                                            timePrices.map((timePrice, index) => (
+                                            timePrices.map((timePrice, index) => {
+                                                const isLocked = lockedSlots.includes(timePrice.time);
+                                                const isMySelection = index === activeIndex;
+                                                
+                                                return (
                                                 <div key={index} onClick={() => timeHandler(timePrice, index)} 
                                                     className={`
-                                                        flex justify-center items-center py-3 rounded-xl border-2 cursor-pointer transition-all duration-200 text-sm font-bold shadow-sm hover:-translate-y-1
-                                                        ${index === activeIndex && timePrice?.booked !== 1 ? "bg-gradient-to-r from-blue-500 to-purple-600 border-transparent text-white shadow-[0_0_15px_rgba(59,130,246,0.5)]" : ""} 
-                                                        ${timePrice?.booked === 1 ? "border-slate-700 bg-slate-800/50 text-slate-500 opacity-50 cursor-not-allowed hover:translate-y-0" : ""}
-                                                        ${index !== activeIndex && timePrice?.booked !== 1 ? "border-slate-600 text-slate-300 hover:border-blue-400 hover:text-blue-400 bg-slate-900/50" : ""}
+                                                        flex justify-center items-center py-3 rounded-xl border-2 cursor-pointer transition-all duration-200 text-sm font-bold shadow-sm 
+                                                        ${isMySelection ? "bg-gradient-to-r from-blue-500 to-purple-600 border-transparent text-white shadow-[0_0_15px_rgba(59,130,246,0.5)] hover:-translate-y-1" : ""} 
+                                                        ${timePrice?.booked === 1 ? "border-slate-700 bg-slate-800/50 text-slate-500 opacity-50 cursor-not-allowed" : ""}
+                                                        ${isLocked && !isMySelection ? "border-amber-500/50 bg-amber-500/10 text-amber-500 cursor-not-allowed" : ""}
+                                                        ${!isMySelection && timePrice?.booked !== 1 && (!isLocked || isMySelection) ? "border-slate-600 text-slate-300 hover:border-blue-400 hover:text-blue-400 bg-slate-900/50 hover:-translate-y-1" : ""}
                                                     `}>
-                                                    <p className="font-semibold tracking-wide text-[13px]">{formatTime12Hour(timePrice.time)}</p>
+                                                    <div className="flex flex-col items-center">
+                                                        <p className="font-semibold tracking-wide text-[13px]">{formatTime12Hour(timePrice.time)}</p>
+                                                        {isLocked && !isMySelection && <span className="text-[9px] uppercase tracking-widest mt-1 opacity-80">Reserved</span>}
+                                                    </div>
                                                 </div>
-                                            ))
+                                            )})
                                         )
                                     }
                                 </div>
+                                
+                                {myLockTimer !== null && price && (
+                                    <div className="mb-6 bg-amber-500/10 border border-amber-500/50 rounded-xl p-3 flex items-center justify-between animate-pulse">
+                                        <div className="flex items-center gap-2 text-amber-500 font-semibold text-sm">
+                                            <MdTimer className="text-xl" /> Slot locked for you
+                                        </div>
+                                        <div className="text-amber-400 font-mono font-bold">
+                                            {Math.floor(myLockTimer / 60)}:{(myLockTimer % 60).toString().padStart(2, '0')}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Sport Selection */}
+                                <div className='mb-6'>
+                                    <h3 className='text-xl font-bold text-white mb-2'>What to play?</h3>
+                                    <div className="grid grid-cols-3 gap-3">
+                                        <button 
+                                            onClick={() => { setSelectedSport('Cricket'); setSelectedEquipment([]); }}
+                                            className={`flex flex-col items-center gap-2 py-3 rounded-xl border-2 transition-all duration-200 ${selectedSport === 'Cricket' ? 'bg-blue-600/20 border-blue-500 text-blue-400' : 'border-slate-700 bg-slate-900/50 text-slate-400 hover:border-slate-500'}`}
+                                        >
+                                            <MdSportsCricket className="text-2xl" />
+                                            <span className="text-xs font-bold uppercase tracking-wider">Cricket</span>
+                                        </button>
+                                        <button 
+                                            onClick={() => { setSelectedSport('Football'); setSelectedEquipment([]); }}
+                                            className={`flex flex-col items-center gap-2 py-3 rounded-xl border-2 transition-all duration-200 ${selectedSport === 'Football' ? 'bg-emerald-600/20 border-emerald-500 text-emerald-400' : 'border-slate-700 bg-slate-900/50 text-slate-400 hover:border-slate-500'}`}
+                                        >
+                                            <MdSportsSoccer className="text-2xl" />
+                                            <span className="text-xs font-bold uppercase tracking-wider">Football</span>
+                                        </button>
+                                        <button 
+                                            onClick={() => { setSelectedSport('Badminton'); setSelectedEquipment([]); }}
+                                            className={`flex flex-col items-center gap-2 py-3 rounded-xl border-2 transition-all duration-200 ${selectedSport === 'Badminton' ? 'bg-purple-600/20 border-purple-500 text-purple-400' : 'border-slate-700 bg-slate-900/50 text-slate-400 hover:border-slate-500'}`}
+                                        >
+                                            <MdSportsTennis className="text-2xl" />
+                                            <span className="text-xs font-bold uppercase tracking-wider">Badminton</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {/* Equipment Rental */}
+                                {selectedSport && (
+                                    <div className='mb-8 p-4 bg-slate-800/30 rounded-2xl border border-slate-700/50'>
+                                        <h3 className='text-md font-bold text-white mb-3 flex items-center gap-2'>
+                                            <span>Equipment Rental</span>
+                                            <span className="text-xs font-normal text-slate-400 bg-slate-800 px-2 py-1 rounded-full border border-slate-700">Optional</span>
+                                        </h3>
+                                        <div className="space-y-2">
+                                            {SPORTS_DATA[selectedSport].map((item, idx) => (
+                                                <label key={idx} className="flex items-center justify-between p-3 rounded-xl border border-slate-700/50 hover:bg-slate-800/50 cursor-pointer transition-colors">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className={`w-5 h-5 rounded flex items-center justify-center border transition-colors ${selectedEquipment.some(e => e.name === item.name) ? 'bg-blue-500 border-blue-500' : 'bg-slate-900 border-slate-600'}`}>
+                                                            {selectedEquipment.some(e => e.name === item.name) && (
+                                                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                                            )}
+                                                        </div>
+                                                        <span className="text-sm font-medium text-slate-300">{item.name}</span>
+                                                    </div>
+                                                    <span className="text-sm font-bold text-emerald-400">+₹{item.price}</span>
+                                                    <input type="checkbox" className="hidden" checked={selectedEquipment.some(e => e.name === item.name)} onChange={() => handleEquipmentToggle(item)} />
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
 
                                 {/* Duration Selection */}
                                 <div className='mb-6'>
@@ -286,11 +485,21 @@ const Turf = () => {
                                                     </div>
                                                 </div>
 
+                                                {equipmentTotal > 0 && (
+                                                    <div className='flex justify-between items-center text-slate-300'>
+                                                        <p>Equipment Rental</p>
+                                                        <div className='flex items-center font-medium text-emerald-400'>
+                                                            <FaRupeeSign className="text-[12px]"/>
+                                                            <span>{equipmentTotal}.00</span>
+                                                        </div>
+                                                    </div>
+                                                )}
+
                                                 <div className='flex justify-between items-center text-white pt-3 border-t border-slate-700 mt-1'>
                                                     <p className='font-bold text-lg'>Total Amount</p>
                                                     <div className='flex items-center text-xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 drop-shadow-sm'>
                                                         <span className="text-blue-400 mr-1">₹</span>
-                                                        <span>{(price * duration) + 14}.00</span>
+                                                        <span>{(price * duration) + equipmentTotal + 14}.00</span>
                                                     </div>
                                                 </div>
                                             </div>

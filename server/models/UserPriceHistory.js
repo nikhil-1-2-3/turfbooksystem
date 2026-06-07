@@ -25,6 +25,19 @@ const userPriceHistorySchema = new mongoose.Schema({
     status: {
         type: String,
         default: "Pending", // Can be "Pending" or "Allotted"
+    },
+    sport: {
+        type: String,
+        default: null,
+    },
+    equipment: [
+        {
+            type: String,
+        }
+    ],
+    equipmentTotal: {
+        type: Number,
+        default: 0,
     }
 });
 

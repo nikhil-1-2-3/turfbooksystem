@@ -7,6 +7,7 @@ import ReviewModal from '../ViewTurf/ReviewModal';
 import Spinner from '../../common/spinner/Spinner';
 import { apiConnector } from '../../../services/apiConnector';
 import { studentEndpoints } from '../../../services/apis';
+import { QRCodeSVG } from 'qrcode.react';
 
 const { REQUEST_CANCELLATION_API } = studentEndpoints;
 
@@ -117,9 +118,16 @@ export default function PurchaseHistory() {
               <span className='font-medium text-slate-400'>Amount Paid: </span> <strong className="text-white">₹{turf.price}</strong>
             </div>
             {turf.bookingToken && (
-              <div className="mt-1">
-                <span className='font-medium text-slate-400 uppercase text-xs tracking-widest'>Token: </span>
-                <span className="font-mono font-bold text-emerald-400 bg-emerald-900/30 px-2 py-1 rounded border border-emerald-800">{turf.bookingToken}</span>
+              <div className="mt-3 flex gap-6 items-center bg-slate-800/30 p-3 rounded-xl border border-slate-700/50">
+                <div>
+                  <span className='font-medium text-slate-400 uppercase text-xs tracking-widest block mb-2'>Check-In Token</span>
+                  <span className="font-mono font-bold text-emerald-400 bg-emerald-900/40 px-3 py-2 rounded-lg border border-emerald-800/50 text-xl tracking-widest shadow-inner shadow-emerald-900/20">{turf.bookingToken}</span>
+                </div>
+                {turf.status === 'Pending' && (
+                  <div className="bg-white p-2 rounded-xl shadow-lg border border-white/20 ml-auto">
+                    <QRCodeSVG value={turf.bookingToken} size={80} level={"H"} />
+                  </div>
+                )}
               </div>
             )}
           </div>

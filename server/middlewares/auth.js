@@ -7,11 +7,11 @@ module.exports.auth=async(req,res,next)=>{
         // extract token
        
 
+        const authHeader = req.header("Authorisation") || req.header("Authorization");
         const token = req.cookies.token 
                         || req.body.token 
-                        || req.header("Authorisation").replace("Bearer ", "");
+                        || (authHeader ? authHeader.replace("Bearer ", "") : null);
 
-        console.log("token: ",token);
         // if token missing return res
         if(!token){
             return res.status(401).json({
@@ -65,9 +65,9 @@ module.exports.validateUser = (req,res,next)=>{
 
 module.exports.isUser = async(req,res,next)=>{
     try{
-        console.log("req.body:",req.user.accountType);
-        if(req.user.accountType!="User"){
-            return res.status.json({
+        console.log("req.user is:", req.user);
+        if(req.user?.accountType !== "User"){
+            return res.status(401).json({
                 success:false,
                 message:"This is protected route only for student"
             })
@@ -86,8 +86,9 @@ module.exports.isUser = async(req,res,next)=>{
 
 module.exports.isOwner = async(req,res,next)=>{
     try{
-        if(req.user.accountType!="Owner"){
-            return res.status.json({
+        console.log("req.user is:", req.user);
+        if(req.user?.accountType !== "Owner"){
+            return res.status(401).json({
                 success:false,
                 message:"This is protected route only for Owner"
             })

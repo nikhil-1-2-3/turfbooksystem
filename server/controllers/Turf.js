@@ -3,6 +3,7 @@ const userSchema = require("../models/User");
 const priceTimeSchema = require("../models/PriceTime");
 const { uploadImageToCloudinary } = require("../utils/imageUploader");
 const mongoose =require("mongoose");
+const { geocodeAddress } = require("../utils/geocode");
 
 
 module.exports.createTurf = async (req, res) => {
@@ -51,6 +52,14 @@ module.exports.createTurf = async (req, res) => {
 
         //create entry in database 
 
+        let lat = null, lng = null;
+        const fullAddress = `${area}, Surat, Gujarat, ${pinCode}, India`; // Enhancing accuracy for Nominatim
+        const coordinates = await geocodeAddress(fullAddress);
+        if (coordinates) {
+            lat = coordinates.lat;
+            lng = coordinates.lng;
+        }
+
         const newTurf = await turfSchema.create({
             turfName,
             turfShortDesc:turfDescription,
@@ -59,6 +68,7 @@ module.exports.createTurf = async (req, res) => {
             area,
             city: "Surat", // Hardcoded per requirements
             pinCode,
+            location: { lat, lng },
             price:null,
             time:null
         });

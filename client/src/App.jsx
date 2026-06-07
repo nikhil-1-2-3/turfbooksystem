@@ -25,7 +25,9 @@ import Error from './pages/Error.jsx';
 import Index from './components/core/Dashboard/setting/Index.jsx';
 import BuyTurfs from './components/core/Dashboard/BuyTurfs.jsx';
 import PurchaseHistory from './components/core/Dashboard/PurchaseHistory.jsx';
+import QRScanner from './components/core/Dashboard/QRScanner.jsx';
 import { ACCOUNT_TYPE } from "./utils/constants";
+import FindPlayers from './components/core/Community/FindPlayers';
 
 // Turf
 import RegisterTurf from './components/core/Dashboard/AddTurf/Index.jsx';
@@ -80,6 +82,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/verify-email" element={<VerifyOtp></VerifyOtp>}></Route>
+          <Route path="/community" element={<FindPlayers></FindPlayers>}></Route>
 
           <Route path="/homeSearch" element={<HomeSearch></HomeSearch>}/>
 
@@ -109,6 +112,7 @@ function App() {
               <Route path="dashboard/my-turfs" element={<MyTurfs />} />
               <Route path="dashboard/edit-turf/:turfId" element={<EditTurf />} />
               <Route path="dashboard/owner" element={<Dashboardinstructor />} />
+              <Route path="dashboard/scanner" element={<QRScanner />} />
             </>
           )}
           {

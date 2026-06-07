@@ -4,12 +4,13 @@ const router = express.Router()
 
 const paymentControllers = require("../controllers/Payments");
 
-const { auth, isInstructor, isUser, isAdmin } = require("../middlewares/auth")
+const { auth, isInstructor, isUser, isAdmin, isOwner } = require("../middlewares/auth")
 router.post("/capturePayment", auth, isUser, paymentControllers.capturePayment);
 router.post("/verifyPayment",auth,paymentControllers.verifySignature);
 router.post("/sendPaymentSuccessEmail", auth, paymentControllers.sendPaymentSuccessEmail);
 router.post("/bookOffline", auth, isUser, paymentControllers.bookOffline);
 router.post("/requestCancellation", auth, isUser, paymentControllers.requestCancellation);
+router.post("/verifyBooking", auth, isOwner, paymentControllers.verifyBooking);
 
 
 module.exports = router;

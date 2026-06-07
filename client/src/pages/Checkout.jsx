@@ -20,7 +20,7 @@ const Checkout = () => {
     const [bookingToken, setBookingToken] = useState(null);
 
     // Get the state passed from Turf.jsx
-    const { price, time, turfDetails, duration = 1, date } = location.state || {};
+    const { price, time, turfDetails, duration = 1, date, sport, equipment, equipmentTotal = 0 } = location.state || {};
 
     const formatTime12Hour = (timeStr) => {
         if (!timeStr) return '';
@@ -48,7 +48,10 @@ const Checkout = () => {
                 turf: turfId,
                 amount: price,
                 time: time,
-                date: date
+                date: date,
+                sport: sport,
+                equipment: equipment,
+                equipmentTotal: equipmentTotal
             }, {
                 Authorisation: `Bearer ${token}`,
             });
@@ -59,10 +62,11 @@ const Checkout = () => {
             }
         } catch (error) {
             console.error(error);
-            toast.error("Booking Failed");
+            const errMsg = error.response?.data?.message || error.message || "Booking Failed";
+            toast.error(`Error: ${errMsg}`);
+        } finally {
+            setIsProcessing(false);
         }
-        
-        setIsProcessing(false);
     };
 
     if (bookingToken) {
@@ -160,9 +164,26 @@ const Checkout = () => {
                                 <div className="flex justify-between items-center text-slate-400">
                                     <span>Arena Base Price</span>
                                     <div className="flex items-center text-white">
-                                        <FaRupeeSign className="text-xs" /> {price - 14}.00
+                                        <FaRupeeSign className="text-xs" /> {price - equipmentTotal - 14}.00
                                     </div>
                                 </div>
+                                <div className="flex justify-between items-center text-slate-400">
+                                    <span>Sport</span>
+                                    <div className="flex items-center text-white font-bold text-emerald-400">
+                                        {sport}
+                                    </div>
+                                </div>
+                                {equipment?.length > 0 && (
+                                    <div className="flex justify-between items-start text-slate-400">
+                                        <span>Equipment Rental</span>
+                                        <div className="flex flex-col items-end">
+                                            <div className="flex items-center text-white">
+                                                <FaRupeeSign className="text-xs" /> {equipmentTotal}.00
+                                            </div>
+                                            <span className="text-xs text-slate-500 max-w-[150px] text-right mt-1">{equipment.join(', ')}</span>
+                                        </div>
+                                    </div>
+                                )}
                                 <div className="flex justify-between items-center text-slate-400">
                                     <span>Platform Processing Fee</span>
                                     <div className="flex items-center text-white">

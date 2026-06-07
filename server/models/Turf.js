@@ -44,6 +44,10 @@ const turfSchema = new mongoose.Schema({
         type:Number,
         require:true,
     },
+    location: {
+        lat: { type: Number },
+        lng: { type: Number }
+    },
     priceTime:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Pricetime"

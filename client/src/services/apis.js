@@ -58,10 +58,17 @@ export const studentEndpoints = {
   SEND_PAYMENT_SUCCESS_EMAIL_API: BASE_URL + "/payment/sendPaymentSuccessEmail",
   BOOK_OFFLINE_API: BASE_URL + "/payment/bookOffline",
   REQUEST_CANCELLATION_API: BASE_URL + "/payment/requestCancellation",
+  VERIFY_BOOKING_API: BASE_URL + "/payment/verifyBooking",
 };
 
-// Rating Endpoints
-
+// RATINGS AND REVIEWS
 export const ratingsEndpoints = {
-  REVIEWS_DETAILS_API:BASE_URL + "/turf/getReviews"
+  REVIEWS_DETAILS_API: BASE_URL + "/turf/getReviews",
+}
+
+// POST ENDPOINTS
+export const postEndpoints = {
+  CREATE_POST_API: BASE_URL + "/post/createPost",
+  GET_ALL_POSTS_API: BASE_URL + "/post/getAllPosts",
+  DELETE_POST_API: BASE_URL + "/post/deletePost"
 }

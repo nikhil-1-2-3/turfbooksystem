@@ -234,8 +234,9 @@ module.exports.sendPaymentSuccessEmail = async (req, res) => {
 }
 
 // Offline Booking System (Token-based)
+
 module.exports.bookOffline = async (req, res) => {
-    const { turf, amount, time, date } = req.body;
+    const { turf, amount, time, date, sport, equipment, equipmentTotal } = req.body;
     const userId = req.user.id;
 
     if (!turf || !amount || !time || !date) {
@@ -249,14 +250,16 @@ module.exports.bookOffline = async (req, res) => {
         // Generate a random 6-character token
         const bookingToken = "TRF-" + crypto.randomBytes(3).toString('hex').toUpperCase();
 
-        // 1. Create UserPriceHistory with token and date
         const History = await userPriceHistorySchema.create({
             price: amount,
             time: time,
             turfId: turf,
             bookingToken: bookingToken,
             bookingDate: date,
-            status: "Pending"
+            status: "Pending",
+            sport: sport || null,
+            equipment: equipment || [],
+            equipmentTotal: equipmentTotal || 0
         });
 
         // 2. Update user's history and turfs list
@@ -284,6 +287,7 @@ module.exports.bookOffline = async (req, res) => {
 
         // We no longer permanently lock slots in priceTimeSchema here. 
         // Availability is calculated dynamically using UserPriceHistory entries!
+
 
         return res.status(200).json({
             success: true,
@@ -330,6 +334,62 @@ module.exports.requestCancellation = async (req, res) => {
         return res.status(500).json({
             success: false,
             message: "Failed to request cancellation",
+        });
+    }
+};
+
+// Verify Booking (QR Code Scanner)
+module.exports.verifyBooking = async (req, res) => {
+    try {
+        const { bookingToken } = req.body;
+        const ownerId = req.user.id;
+
+        if (!bookingToken) {
+            return res.status(400).json({ success: false, message: "Booking Token is required" });
+        }
+
+        const history = await userPriceHistorySchema.findOne({ bookingToken }).populate('turfId');
+        if (!history) {
+            return res.status(404).json({ success: false, message: "Invalid Booking Token" });
+        }
+
+        if (!history.turfId) {
+            return res.status(404).json({ success: false, message: "Turf data missing for this booking" });
+        }
+
+        if (history.turfId.owner.toString() !== ownerId) {
+            return res.status(403).json({ success: false, message: "Unauthorized. This booking belongs to another turf." });
+        }
+
+        if (history.status === "Checked-In") {
+            return res.status(400).json({ success: false, message: "This booking has already been checked-in." });
+        }
+        
+        if (history.status === "Cancelled" || history.status === "Cancellation_Requested") {
+            return res.status(400).json({ success: false, message: "This booking is cancelled." });
+        }
+
+        history.status = "Checked-In";
+        await history.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Ticket Verified & Checked-In successfully",
+            data: {
+                turfName: history.turfId.turfName,
+                bookingDate: history.bookingDate,
+                time: history.time,
+                price: history.price,
+                sport: history.sport,
+                equipment: history.equipment
+            }
+        });
+
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({
+            success: false,
+            message: "Failed to verify booking",
         });
     }
 };

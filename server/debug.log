@@ -1,0 +1,6 @@
+
+
+--- New Booking Request ---
+Body: {"turf":"6a15e15ea1ca78474ed491c5","amount":100,"time":"10:00","date":"2026-06-10","sport":"Cricket","equipment":["Bat"],"equipmentTotal":100}
+User: {"email":"testuser@example.com","id":"6a157042439382678f505d63","accountType":"User","iat":1780667867,"exp":1780754267}
+Booking Success: TRF-F0C77C

@@ -27,6 +27,13 @@ export const sidebarLinks = [
     type: ACCOUNT_TYPE.OWNER,
     icon: "VscAdd",
   },
+  {
+    id: 7,
+    name: "Scanner",
+    path: "/dashboard/scanner",
+    type: ACCOUNT_TYPE.OWNER,
+    icon: "VscDeviceCamera",
+  },
   // {
   //   id: 5,
   //   name: "Booked Turf",
