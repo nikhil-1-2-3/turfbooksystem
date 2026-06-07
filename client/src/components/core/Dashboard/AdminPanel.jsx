@@ -24,7 +24,7 @@ const AdminPanel = () => {
             try {
                 // Fetch Users
                 const userRes = await apiConnector("GET", GET_ALL_USERS_API, null, {
-                    Authorisation: `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                 });
                 if (userRes.data.success) {
                     setUsers(userRes.data.data);
@@ -32,7 +32,7 @@ const AdminPanel = () => {
 
                 // Fetch Bookings
                 const bookingRes = await apiConnector("GET", GET_ALL_BOOKINGS_API, null, {
-                    Authorisation: `Bearer ${token}`,
+                    Authorization: `Bearer ${token}`,
                 });
                 if (bookingRes.data.success) {
                     setBookings(bookingRes.data.data);
@@ -51,7 +51,7 @@ const AdminPanel = () => {
         
         try {
             const res = await apiConnector("DELETE", DELETE_USER_API, { userId }, {
-                Authorisation: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             });
             if (res.data.success) {
                 toast.success("User deleted successfully");
@@ -74,7 +74,7 @@ const AdminPanel = () => {
 
         try {
             const res = await apiConnector("PUT", ALLOT_BOOKING_API, { bookingId }, {
-                Authorisation: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             });
             if (res.data.success) {
                 toast.success("Token Verified! Turf Successfully Allotted.");
@@ -91,7 +91,7 @@ const AdminPanel = () => {
 
         try {
             const res = await apiConnector("PUT", APPROVE_CANCELLATION_API, { bookingId }, {
-                Authorisation: `Bearer ${token}`,
+                Authorization: `Bearer ${token}`,
             });
             if (res.data.success) {
                 toast.success("Cancellation Approved! Slot is now free.");
@@ -105,7 +105,7 @@ const AdminPanel = () => {
     if (loading) return <div className="h-full flex justify-center items-center"><Spinner /></div>;
 
     const formatTime12Hour = (timeStr) => {
-        if (!timeStr) return '';
+        if (!timeStr || typeof timeStr !== 'string') return '';
         const slots = timeStr.split(',');
         const start = parseInt(slots[0].split(':')[0], 10);
         const ampm = start >= 12 && start < 24 ? 'PM' : 'AM';
@@ -184,11 +184,11 @@ const AdminPanel = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-800/50">
-                                {users.map(user => (
+                                {users?.map(user => (
                                     <tr key={user._id} className="hover:bg-slate-800/30 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <img src={user.image} alt={user.firstName} className="w-10 h-10 rounded-full border border-slate-700" />
+                                                <img src={user.image || `https://api.dicebear.com/5.x/initials/svg?seed=${user.firstName}`} alt={user.firstName} className="w-10 h-10 rounded-full border border-slate-700" />
                                                 <span className="font-semibold">{user.firstName} {user.lastName}</span>
                                             </div>
                                         </td>
@@ -219,7 +219,7 @@ const AdminPanel = () => {
             {/* Requested Bookings Tab */}
             {activeTab === 'requested' && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {bookings.filter(b => b.status === "Pending").map((booking, index) => (
+                    {bookings?.filter(b => b.status === "Pending").map((booking, index) => (
                         <div key={index} className="bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-amber-500/50 transition-colors relative overflow-hidden">
                             <div className="absolute top-0 right-0 bg-amber-500/20 text-amber-500 text-xs font-bold px-3 py-1 rounded-bl-lg">Pending</div>
                             <h3 className="text-xl font-bold text-white mb-4 line-clamp-1 pr-16">{booking.turfId?.turfName || "Deleted Turf"}</h3>
@@ -277,7 +277,7 @@ const AdminPanel = () => {
                             )}
                         </div>
                     ))}
-                    {bookings.filter(b => b.status === "Pending").length === 0 && (
+                    {bookings?.filter(b => b.status === "Pending").length === 0 && (
                         <div className="col-span-full text-center py-12 text-slate-500">
                             No requested bookings found.
                         </div>
@@ -288,7 +288,7 @@ const AdminPanel = () => {
             {/* Booked List Tab */}
             {activeTab === 'booked' && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {bookings.filter(b => b.status === "Allotted" || b.status === "Cancelled").map((booking, index) => (
+                    {bookings?.filter(b => b.status === "Allotted" || b.status === "Cancelled").map((booking, index) => (
                         <div key={index} className={`bg-slate-900 border ${booking.status === "Cancelled" ? "border-red-500/30 opacity-60" : "border-emerald-500/30 opacity-80"} rounded-2xl p-6 relative overflow-hidden`}>
                             <div className={`absolute top-0 right-0 text-white text-xs font-bold px-3 py-1 rounded-bl-lg flex items-center gap-1 ${booking.status === "Cancelled" ? "bg-red-500" : "bg-emerald-500"}`}>
                                 {booking.status === "Cancelled" ? "Cancelled" : <><FaCalendarCheck /> Allotted</>}
@@ -314,7 +314,7 @@ const AdminPanel = () => {
                             </div>
                         </div>
                     ))}
-                    {bookings.filter(b => b.status === "Allotted" || b.status === "Cancelled").length === 0 && (
+                    {bookings?.filter(b => b.status === "Allotted" || b.status === "Cancelled").length === 0 && (
                         <div className="col-span-full text-center py-12 text-slate-500">
                             No confirmed bookings in the list yet.
                         </div>
@@ -325,7 +325,7 @@ const AdminPanel = () => {
             {/* Cancellations Tab */}
             {activeTab === 'cancellations' && (
                 <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {bookings.filter(b => b.status === "Cancellation_Requested").map((booking, index) => (
+                    {bookings?.filter(b => b.status === "Cancellation_Requested").map((booking, index) => (
                         <div key={index} className="bg-slate-900 border border-red-500/30 rounded-2xl p-6 relative overflow-hidden">
                             <div className="absolute top-0 right-0 bg-red-500/20 text-red-400 text-xs font-bold px-3 py-1 rounded-bl-lg">Cancellation Req.</div>
                             <h3 className="text-xl font-bold text-white mb-4 line-clamp-1 pr-24">{booking.turfId?.turfName || "Deleted Turf"}</h3>
@@ -356,7 +356,7 @@ const AdminPanel = () => {
                             </button>
                         </div>
                     ))}
-                    {bookings.filter(b => b.status === "Cancellation_Requested").length === 0 && (
+                    {bookings?.filter(b => b.status === "Cancellation_Requested").length === 0 && (
                         <div className="col-span-full text-center py-12 text-slate-500">
                             No pending cancellation requests.
                         </div>
